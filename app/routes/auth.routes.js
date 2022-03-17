@@ -1,6 +1,6 @@
-const { verifySignUp } = require("../middleware");
-const controller = require("../controllers/auth.controller");
-module.exports = (app) => {
+import { verifySignUp } from "../middleware/index.js";
+import * as controller from "../controllers/auth.controller.js";
+export default (app) => {
   app.use((req, res, next) => {
     res.header(
       "Access-Control-Allow-Headers",
