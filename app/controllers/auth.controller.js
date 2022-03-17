@@ -1,11 +1,11 @@
-const db = require("../models");
-const config = require("../config/auth.config");
+import db from "../models/index.js";
+import config from "../config/auth.config.js";
 const User = db.user;
 const Role = db.role;
 const Op = db.Sequelize.Op;
-let jwt = require("jsonwebtoken");
-let bcrypt = require("bcryptjs");
-exports.signup = (req, res) => {
+import jwt from "jsonwebtoken";
+import bcrypt from 'bcryptjs';
+const signup = (req, res) => {
   // Save User to Database
   User.create({
     username: req.body.username,
@@ -36,7 +36,7 @@ exports.signup = (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
-exports.signin = (req, res) => {
+const signin = (req, res) => {
   User.findOne({
     where: {
       username: req.body.username
@@ -77,3 +77,8 @@ exports.signin = (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
+
+export {
+  signup,
+  signin
+}
