@@ -1,9 +1,7 @@
-// const config = require("../config/db.config.js");
 import config from '../config/db.config.js'
 import { Sequelize } from 'sequelize';
 import userModel from './user.model.js'
 import roleModel from './role.model.js'
-// const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(
   config.DB,

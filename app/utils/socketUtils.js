@@ -2,11 +2,12 @@
 import { Server } from "socket.io";
 
 const sio = (server) => {
-  return new Server(server, {
+  return new Server(server,{
     transport: ["polling"],
+    allowEIO3: true,
     cors: {
-      origin: "*"
-    }
+      origin: "*",
+    },
   })
 }
 
@@ -16,6 +17,10 @@ const connection = (io) => {
 
     socket.on("message", (message) => {
       console.log(`message from ${socket.id} : ${message}`);
+    })
+
+    socket.on("rame", (message) => {
+      console.log(`OOOmessage from ${socket.id} : ${message}`);
     })
 
     socket.on("disconnect", () => {

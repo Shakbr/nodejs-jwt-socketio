@@ -1,3 +1,3 @@
 export default {
-  secret: "jwt-secret-key"
+  secret: process.env.JWT_SECRET
 };
