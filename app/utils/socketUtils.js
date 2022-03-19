@@ -13,15 +13,15 @@ const sio = (server) => {
 
 const connection = (io) => {
   io.on("connection", (socket) => {
-    console.log("A user is connected");
+    console.log(`A user with ${socket.id} is connected`);
 
     socket.on("message", (message) => {
+      io.emit("response", "aqaaaaaaaaaaa")
       console.log(`message from ${socket.id} : ${message}`);
+      console.log(JSON.stringify(message, null, 2));
     })
 
-    socket.on("rame", (message) => {
-      console.log(`OOOmessage from ${socket.id} : ${message}`);
-    })
+
 
     socket.on("disconnect", () => {
       console.log(`socket ${socket.id} disconnected`);

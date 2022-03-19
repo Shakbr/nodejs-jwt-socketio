@@ -5,6 +5,7 @@ const app = express();
 import * as socketUtils from "./app/utils/socketUtils.js"
 import 'dotenv/config'
 import { Server } from 'socket.io';
+import segmentationRouter from './app/routes/segmentation.routes.js'
 
 import db from './app/models/index.js'
 import * as http from 'http';
@@ -33,6 +34,8 @@ app.use(cors());
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/segmentation',segmentationRouter);
 
 // simple route
 app.get("/", (req, res) => {
@@ -85,3 +88,7 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`.bgBlue);
 });
+
+export {
+  io
+}
