@@ -1,4 +1,4 @@
-import * as  jwt from "jsonwebtoken";
+import jsonwebtoken from "jsonwebtoken";
 import config from "../config/auth.config.js";
 import db from "../models/index.js";
 const User = db.user;
@@ -10,12 +10,14 @@ const verifyToken = (req, res, next) => {
     });
   }
   token = token.replace(/^Bearer\s+/, "");
-  jwt.verify(token, config.secret, (err, decoded) => {
+  jsonwebtoken.verify(token, config.secret, (err, decoded) => {
     if (err) {
+      console.log(err.bgRed);
       return res.status(401).send({
         message: "Unauthorized!"
       });
     }
+    console.log(decoded.bgGreen);
     req.userId = decoded.id;
     next();
   });
