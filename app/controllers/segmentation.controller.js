@@ -1,7 +1,7 @@
 import { io } from '../../server.js';
 import { validationResult } from 'express-validator';
 import moment from 'moment';
-import { generateElasticsearchIndex, findSegmentData } from '../utils/elasticSearch.js';
+import { findSegmentData } from '../utils/elasticSearch.js';
 
 const getFilteredData = async (req, res) => {
   try {
@@ -28,6 +28,15 @@ const findSegment = async (req, res) => {
   let { query, selected_company, date } = req.body;
   let startDate = date[0];
   let endDate = date[1];
+  let finalData = {
+    phone_number: 0,
+    email: 0,
+    customers: 0,
+    gender: {
+      male: 0,
+      female: 0
+    }
+  };
 
   if (req.body.dynamic) {
     let dynamic = req.body.dynamic;
@@ -40,6 +49,11 @@ const findSegment = async (req, res) => {
 
 
   let aggregation = {
+    'fingerprints': {
+      'cardinality': {
+        'field': 'fingerprint_hash'
+      }
+    },
     'phone_number': {
       'cardinality': {
         'field': 'personal_data.phone_number.keyword'
@@ -63,8 +77,19 @@ const findSegment = async (req, res) => {
       }
     }
   };
+
   const elasticSearchResponse = await findSegmentData(query, aggregation, selected_company, startDate, endDate);
-  res.status(200).send({ data: elasticSearchResponse })
+  if (elasticSearchResponse) {
+    for await (const genderObj of elasticSearchResponse.body.aggregations.gender.buckets) {
+      finalData['gender'][genderObj.key] = genderObj.amount.value;
+    }
+    finalData['email'] = elasticSearchResponse.body.aggregations.email.value;
+    finalData['phone_number'] = elasticSearchResponse.body.aggregations.phone_number.value;
+    finalData['customers'] = elasticSearchResponse.body.aggregations.fingerprints.value;
+  }
+
+
+  res.status(200).send({ data: finalData });
 };
 
 export {
