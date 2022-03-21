@@ -1,5 +1,6 @@
 import { authJwt } from "../middleware/index.js";
-import { getFilteredData } from "../controllers/segmentation.controller.js";
+import validateInputs from "../middleware/inputValidator.js";
+import { getFilteredData, findSegment } from "../controllers/segmentation.controller.js";
 import express from 'express';
 
 const router = express.Router();
@@ -13,6 +14,12 @@ const router = express.Router();
 //   }
 // })
 
-router.post('/filter', getFilteredData)
+router.post('/filterOld', getFilteredData)
+
+router.post(
+  '/filter',
+  validateInputs('findSegment'),
+  findSegment
+)
 
 export default router
