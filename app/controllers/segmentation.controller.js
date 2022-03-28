@@ -92,7 +92,129 @@ const findSegment = async (req, res) => {
   res.status(200).send({ data: finalData });
 };
 
+const findSegmentSocket = async (data, socket, io) => {
+  console.log(data);
+  let { query, selected_company, date } = data;
+  let startDate = date[0];
+  let endDate = date[1];
+  let finalData = [];
+
+
+  let aggregation = {
+    'consentTrue': {
+      'filter': {
+        'term': {
+          'consent': {
+            'value': true
+          }
+        }
+      },
+      'aggs': {
+        'gender': {
+          'terms': {
+            'field': 'personal_data.gender.keyword'
+          },
+          'aggs': {
+            'amount': {
+              'cardinality': {
+                'field': 'personal_data.email.keyword'
+              }
+            }
+          }
+        },
+        'Audience': {
+          'cardinality': {
+            'field': 'fingerprint_hash'
+          }
+        },
+        'Phone Number': {
+          'cardinality': {
+            'field': 'personal_data.phone_number.keyword'
+          }
+        },
+        'Email': {
+          'cardinality': {
+            'field': 'personal_data.email.keyword'
+          }
+        }
+      }
+    },
+    'Audience': {
+      'cardinality': {
+        'field': 'fingerprint_hash'
+      }
+    },
+    'Phone Number': {
+      'cardinality': {
+        'field': 'personal_data.phone_number.keyword'
+      }
+    },
+    'Email': {
+      'cardinality': {
+        'field': 'personal_data.email.keyword'
+      }
+    },
+    'gender': {
+      'terms': {
+        'field': 'personal_data.gender.keyword'
+      },
+      'aggs': {
+        'amount': {
+          'cardinality': {
+            'field': 'personal_data.email.keyword'
+          }
+        }
+      }
+    }
+  };
+
+  const elasticSearchResponse = await findSegmentData(query, aggregation, selected_company, startDate, endDate);
+  console.log(elasticSearchResponse.body.aggregations);
+  if (elasticSearchResponse) {
+    for await (const [key, value] of Object.entries(elasticSearchResponse.body.aggregations)) {
+      if (key !== 'consentTrue' ) {
+        if (key === 'gender') {
+          // for await (const genderObj of value.gender.buckets) {
+          //   finalData['gender'][genderObj.key] = genderObj.amount.value;
+          // }
+        } else {
+          finalData.push(
+            {
+              type: 'Consent True',
+              value: elasticSearchResponse.body.aggregations.consentTrue[key].value,
+              label: `${key} (${value.value})`
+            }
+          );
+          finalData.push(
+            {
+              type: 'Consent False',
+              value: value.value  - elasticSearchResponse.body.aggregations.consentTrue[key].value,
+              label: `${key} (${value.value})`
+            }
+          );
+          // finalData = Object.assign(finalData
+          //   {
+          //     label: 'Consent False',
+          //     value: value.value  - elasticSearchResponse.body.aggregations.consentTrue[key].value,
+          //     type: `${key} (${value.value})`
+          //   }
+          // );
+        }
+      }
+    }
+
+    // finalData['email'] = elasticSearchResponse.body.aggregations.email.value;
+    // finalData['phone_number'] = elasticSearchResponse.body.aggregations.phone_number.value;
+    // finalData['customers'] = elasticSearchResponse.body.aggregations.fingerprints.value;
+  }
+  console.log(finalData);
+  io.to(socket.id).emit('finalResponse', finalData);
+  // return finalData;
+  // res.status(200).send({ data: finalData });
+};
+
 export {
   getFilteredData,
-  findSegment
+  findSegment,
+  findSegmentSocket
 };
